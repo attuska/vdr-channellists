@@ -1,5 +1,8 @@
 VDR Plugin 'channellists' Revision History
 ------------------------------------------
+2018-05-06: Version 0.0.6
+- Porting to vdr-2.3.1
+- Added hungarian-translation
 2013-03-19: Version 0.0.5
 - Added Makefile for vdr >= 1.7.36
 - Minimum required VDR version is 1.6.0
