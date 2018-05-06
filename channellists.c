@@ -341,6 +341,9 @@ const char **cPluginChannellists::SVDRPHelpPages(void) {
 
 cString cPluginChannellists::SVDRPCommand(const char *Command, const char *Option, int &ReplyCode) {
   // Process SVDRP commands this plugin implements
+#if VDRVERSNUM >= 20301
+  LOCK_CHANNELS_READ;
+#endif
   if (strcasecmp(Command, "LIST") == 0) { //   TODO need a function for reloading channellists osd
      return cString::sprintf("sorry, this is for testing only");
      }
@@ -350,7 +353,11 @@ cString cPluginChannellists::SVDRPCommand(const char *Command, const char *Optio
         FILE *in,*out;
         in=fopen(Option,"r");
         if (in) {
-           Channels.SwitchTo(1);
+#if VDRVERSNUM >= 20301
+           Channels->SwitchTo(1);
+#else
+           Channels.SwitchTo(1);         
+#endif
            TimerList timers;
            timers.SaveTimer();
            out=fopen(ChannelsConf,"w");
@@ -364,8 +371,13 @@ cString cPluginChannellists::SVDRPCommand(const char *Command, const char *Optio
               LOG_ERROR_STR(ChannelsConf);
               }
            fclose(in);
+#if VDRVERSNUM >= 20301
+           Channels->Load(ChannelsConf);
+           Channels->SwitchTo(1);
+#else
            Channels.Load(ChannelsConf);
            Channels.SwitchTo(1);
+#endif
            timers.RestoreTimer();
            return cString::sprintf("channels.conf successfully reloaded");
            }
@@ -377,8 +389,13 @@ cString cPluginChannellists::SVDRPCommand(const char *Command, const char *Optio
      else {
         TimerList timers;
         timers.SaveTimer();
+#if VDRVERSNUM >= 20301
+        Channels->Load(ChannelsConf);
+        Channels->SwitchTo(1);
+#else
         Channels.Load(ChannelsConf);
         Channels.SwitchTo(1);
+#endif
         timers.RestoreTimer();
         return cString::sprintf("channels.conf successfully reloaded");
         }
@@ -389,6 +406,16 @@ cString cPluginChannellists::SVDRPCommand(const char *Command, const char *Optio
 
 // --- TimerList -------------------------------------------------------------
 // Timer Save and Restore Methods
+#if VDRVERSNUM >= 20301
+void TimerList::SaveTimer() {
+  myTimers.Clear();
+  LOCK_TIMERS_WRITE;
+  for (const cTimer *t = Timers->First(); t; t= Timers->Next(t)) {
+     myTimers.Add(new TimerString(t->ToText(true)));
+     }
+  Timers->cList<cTimer>::Clear();
+  }
+#else
 void TimerList::SaveTimer() {
   myTimers.Clear();
   for (cTimer *t = Timers.First(); t; t= Timers.Next(t)) {
@@ -396,11 +423,23 @@ void TimerList::SaveTimer() {
      }
   Timers.cList<cTimer>::Clear();
   }
+#endif
 
 // restore Timers, delete Timers with unknown channel
 void TimerList::RestoreTimer() {
+#if VDRVERSNUM >= 20301
+  LOCK_TIMERS_WRITE;
+  Timers->cList<cTimer>::Clear();
+  for (TimerString *timer = myTimers.First(); timer; timer= myTimers.Next(timer)) {
+     cString t = timer->GetTimerString();
+     cTimer *tim = new cTimer();
+     tim->Parse(t);
+     if (tim->Channel() != NULL)
+        Timers->Add(tim);
+     }
+  Timers->SetModified();
+#else
   Timers.cList<cTimer>::Clear();
-
   for (TimerString *timer = myTimers.First(); timer; timer= myTimers.Next(timer)) {
      cString t = timer->GetTimerString();
      cTimer *tim = new cTimer();
@@ -409,6 +448,7 @@ void TimerList::RestoreTimer() {
         Timers.Add(tim);
      }
   Timers.SetModified();
+#endif
   myTimers.Clear();
   }
 
@@ -565,8 +605,15 @@ eOSState cSwitchMenu::SwitchChannellist() {
 
      FILE *in,*out;
      in=fopen(ToLoad,"r");
+#if VDRVERSNUM >= 20301
+     LOCK_CHANNELS_READ;
+#endif
      if (in) {
+#if VDRVERSNUM >= 20301
+        Channels->SwitchTo(1);
+#else
         Channels.SwitchTo(1);
+#endif
         TimerList timers;
         timers.SaveTimer();
         out=fopen(ChannelsConf,"w");
@@ -581,8 +628,13 @@ eOSState cSwitchMenu::SwitchChannellist() {
            ErrorMsg(trNOOP("An error occurs, see syslog..."));
            }
         fclose(in);
+#if VDRVERSNUM >= 20301
+        Channels->Load(ChannelsConf);
+        Channels->SwitchTo(1);
+#else
         Channels.Load(ChannelsConf);
         Channels.SwitchTo(1);
+#endif
         timers.RestoreTimer();
         if (ActionAfterSwitch == 1)
            state = osBack;
