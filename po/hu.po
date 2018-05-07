@@ -37,7 +37,7 @@ msgstr "váltás utáni teendő"
 
 #: channellists.c:55
 msgid "Button Red"
-msgstr "poros"
+msgstr "piros"
 
 #: channellists.c:55
 msgid "Rename"
@@ -61,7 +61,7 @@ msgstr "név"
 
 #: channellists.c:510
 msgid "Channellists"
-msgstr "csatornalisák"
+msgstr "csatornalisták"
 
 #: channellists.c:560
 msgid "Switch current channellist?"
@@ -77,20 +77,20 @@ msgstr "szkript végrehajtása?"
 
 #: channellists.c:685
 msgid "Button$Script"
-msgstr "szkriptgomb"
+msgstr "szkript"
 
 #: channellists.c:685
 msgid "Button$Rename"
-msgstr "átnevezőgomb"
+msgstr "átnevezés"
 
 #: channellists.c:685
 msgid "Button$Copy"
-msgstr "másológomb"
+msgstr "másololás"
 
 #: channellists.c:685
 msgid "Button$Delete"
-msgstr "törlőgomb"
+msgstr "törlés"
 
 #: channellists.c:685
 msgid "Button$Save"
-msgstr "mentőgomb"
+msgstr "mentés"
